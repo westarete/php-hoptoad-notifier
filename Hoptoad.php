@@ -30,8 +30,7 @@ class Hoptoad
   public static function errorHandler($code, $message, $file, $line)
   {
     if ($code == E_STRICT) return;
-    
-	  $trace = Hoptoad::tracer();
+	$trace = Hoptoad::tracer();
     Hoptoad::notifyHoptoad(HOPTOAD_API_KEY, $message, $file, $line, $trace, null);
   }
   
@@ -44,8 +43,7 @@ class Hoptoad
    */
   public static function exceptionHandler($exception)
   {
-  	$trace = Hoptoad::tracer($exception->getTrace());
-  	
+    $trace = Hoptoad::tracer($exception->getTrace());
     Hoptoad::notifyHoptoad(HOPTOAD_API_KEY, $exception->getMessage(), $exception->getFile(), $exception->getLine(), $trace, null);
   }
   
