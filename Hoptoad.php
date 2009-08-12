@@ -1,8 +1,4 @@
 <?php
-if (!class_exists('HTTP_Request')) require_once('HTTP/Request.php');
-if (!class_exists('Horde_Yaml')) require_once('Horde/Yaml.php');
-if (!class_exists('Horde_Yaml_Dumper')) require_once('Horde/Yaml/Dumper.php');
-
 class Hoptoad
 {
   /**
@@ -59,10 +55,6 @@ class Hoptoad
    */
   public static function notifyHoptoad($api_key, $message, $file, $line, $trace, $error_class=null)
   {
-    $req =& new HTTP_Request("http://hoptoadapp.com/notices/", array("method" => "POST", "timeout" => 2));
-    $req->addHeader('Accept', 'text/xml, application/xml');
-    $req->addHeader('Content-type', 'application/x-yaml');
-
     array_unshift($trace, "$file:$line");
     
     if (isset($_SESSION)) {
@@ -81,9 +73,20 @@ class Hoptoad
       'session'         => $session,
       'environment'     => $_SERVER
     );
-    
-    $req->setBody(Horde_Yaml::dump(array("notice" => $body)));
-    $req->sendRequest();
+	require_once(dirname(__FILE__) . "/spyc.php");
+	$yaml = Spyc::YAMLDump(array("notice" => $body),4,60);
+
+	$curlHandle = curl_init(); // init curl
+
+    // cURL options
+    curl_setopt($curlHandle, CURLOPT_URL, 'http://hoptoadapp.com/notices/'); // set the url to fetch
+    curl_setopt($curlHandle, CURLOPT_POST, 1);	
+    curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // time to wait in seconds
+	curl_setopt($curlHandle, CURLOPT_POSTFIELDS,  $yaml);
+	curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: application/x-yaml"));
+
+    $content = curl_exec($curlHandle); // Make the call for sending the SMS
+    curl_close($curlHandle); // Close the connection 
   }
   
   /**

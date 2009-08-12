@@ -10,14 +10,10 @@ For deploy tracking, since I use Capistrano to deploy my PHP apps, I simply use 
 
 # Requirements
 
-The notifier uses the Horde_Yaml class. You can install this class using the commands below.
+The notifier uses the php's curl librarys. To install on Ubuntu if you are using PHP 5 you would run
+	sudo apt-get install php5-curl
+	sudo /etc/init.d/apache2 reload
 
-    pear channel-discover pear.horde.org
-    pear install horde/yaml
-
-It also uses Pear's HTTP_Request:
-
-    pear install HTTP_Request
     
 # License
 
