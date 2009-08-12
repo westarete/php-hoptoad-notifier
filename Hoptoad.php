@@ -1,4 +1,6 @@
 <?php
+require_once(dirname(__FILE__) . "/spyc.php");
+
 class Hoptoad
 {
   /**
@@ -73,7 +75,6 @@ class Hoptoad
       'session'         => $session,
       'environment'     => $_SERVER
     );
-	require_once(dirname(__FILE__) . "/spyc.php");
 	$yaml = Spyc::YAMLDump(array("notice" => $body),4,60);
 
 	$curlHandle = curl_init(); // init curl
