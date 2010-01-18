@@ -78,7 +78,7 @@ class Hoptoad
 	$curlHandle = curl_init(); // init curl
 
     // cURL options
-    curl_setopt($curlHandle, CURLOPT_URL, 'http://hoptoadapp.com/notices/'); // set the url to fetch
+    curl_setopt($curlHandle, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices'); // set the url to fetch
     curl_setopt($curlHandle, CURLOPT_POST, 1);	
     curl_setopt($curlHandle, CURLOPT_HEADER, 0);
     curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // time to wait in seconds
