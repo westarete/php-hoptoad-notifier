@@ -118,7 +118,7 @@ class Hoptoad
     curl_setopt($curlHandle, CURLOPT_HEADER, 0);
     curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // time to wait in seconds
 	curl_setopt($curlHandle, CURLOPT_POSTFIELDS,  $yaml);
-	curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: application/x-yaml"));
+	curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
     curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, 1);
 
     curl_exec($curlHandle);   // Make the call for sending the SMS
