@@ -1,5 +1,4 @@
 <?php
-require_once(dirname(__FILE__) . "/spyc.php");
 
 /*
 An example of the type of request that we'll want to generate and send to hoptoad:
