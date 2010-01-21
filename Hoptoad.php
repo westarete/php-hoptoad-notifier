@@ -65,7 +65,7 @@ class Hoptoad
   public static function errorHandler($code, $message, $file, $line)
   {
     if ($code == E_STRICT) return;
-	$trace = Hoptoad::tracer();
+	  $trace = Hoptoad::tracer();
     Hoptoad::notifyHoptoad(HOPTOAD_API_KEY, $message, $file, $line, $trace, null);
   }
   
@@ -99,26 +99,26 @@ class Hoptoad
     }
     
     $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-    $body = array(
-      'api_key'         => $api_key,
-      'error_class'     => $error_class,
-      'error_message'   => $message,
-      'backtrace'       => $trace,
-      'request'         => array("params" => $_REQUEST, "url" => $url),
-      'session'         => $session,
-      'environment'     => $_SERVER
-    );
-	$yaml = Spyc::YAMLDump(array("notice" => $body),4,60);
-
-	$curlHandle = curl_init(); // init curl
+    $body = '';
+    $body .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $body .= "<notice version=\"2.0\">\n";
+    $body .= "  <api-key>{$api_key}</api-key>\n";
+    $body .= "  <notifier>\n";
+    $body .= "    <name>php-hoptoad-notifier</name>\n";
+    $body .= "    <version>0.2.0</version>\n";
+    $body .= "    <url>http://github.com/westarete/php-hoptoad-notifier</url>\n";
+    $body .= "  </notifier>\n";
+    $body .= "</notice>\n";
+    
+  	$curlHandle = curl_init(); // init curl
 
     // cURL options
     curl_setopt($curlHandle, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices'); // set the url to fetch
     curl_setopt($curlHandle, CURLOPT_POST, 1);	
     curl_setopt($curlHandle, CURLOPT_HEADER, 0);
     curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // time to wait in seconds
-	curl_setopt($curlHandle, CURLOPT_POSTFIELDS,  $yaml);
-	curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
+	  curl_setopt($curlHandle, CURLOPT_POSTFIELDS,  $yaml);
+	  curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
     curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, 1);
 
     curl_exec($curlHandle);   // Make the call for sending the SMS
