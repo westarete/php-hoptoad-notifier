@@ -126,13 +126,25 @@ class Hoptoad
     return $xml;
   }
   
+  function xml_cgi_data() {
+    if (isset($_SERVER)) {      
+      $xml  =     "<cgi-data>\n";
+      $xml .= $this->xml_keys_and_values($_SERVER);
+      $xml .= "    </cgi-data>";
+    } else {
+      $xml = '';
+    }
+    return $xml;
+  }
+  
   function notification_body() {
     $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
     $api_key = self::$api_key;
     $error_class = $this->error_class;
     $message = $this->message;
-    $trace = $this->xml_backtrace();
-    $session = $this->xml_session();
+    $xml_trace = $this->xml_backtrace();
+    $xml_session = $this->xml_session();
+    $xml_cgi_data = $this->xml_cgi_data();
 
     return <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -146,7 +158,7 @@ class Hoptoad
   <error>
     <class>{$error_class}</class>
     <message>{$message}</message>
-    {$trace}
+    {$xml_trace}
   </error>
   <request>
     <url>http://example.com</url>
@@ -155,11 +167,8 @@ class Hoptoad
     <params>
       <var key="name">value</var>
     </params>
-    {$session}
-    <cgi-data>
-      <var key="SERVER_NAME">example.org</var>
-      <var key="HTTP_USER_AGENT">Mozilla</var>
-    </cgi-data>
+    {$xml_session}
+    {$xml_cgi_data}
   </request>
   <server-environment>
     <project-root>/testapp</project-root>

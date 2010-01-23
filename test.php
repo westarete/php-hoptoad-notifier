@@ -2,8 +2,12 @@
 require_once 'PHPUnit/Framework.php';
 require_once 'Hoptoad.php';
  
-$_SERVER['HTTP_HOST'] = 'localhost';
-$_SERVER['REQUEST_URI'] = '/example.php';
+$_SERVER = array(
+  'HTTP_HOST'    => 'localhost',
+  'REQUEST_URI'  => '/example.php',
+  'HTTP_REFERER' => 'http://localhost/reports/somthing',
+);
+
 $_SESSION = array(
   'var1' => 'val1',
   'var2' => 'val2',
@@ -59,6 +63,18 @@ XML;
       $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_session());
     }
     
+    function testXMLCgiData()
+    {
+      $expected_xml = <<<XML
+        <cgi-data>
+          <var key="HTTP_HOST">localhost</var>
+          <var key="REQUEST_URI">/example.php</var>
+          <var key="HTTP_REFERER">http://localhost/reports/somthing</var>
+        </cgi-data>
+XML;
+      $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_cgi_data());
+    }
+
     public function testNotificationBody() 
     {
       $xmllint = popen('xmllint --schema hoptoad_2_0.xsd -', 'w');
