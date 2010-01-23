@@ -139,10 +139,20 @@ class Hoptoad
    */
   function notify()
   {
+    $body = $this->notification_body();
     if (self::$debug) {
-      return $this->notification_body();
+      return $body;
     } else {
-      $this->send_notification();
+    	$curl = curl_init();
+      curl_setopt($curl, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices');
+      curl_setopt($curl, CURLOPT_POST, 1);	
+      curl_setopt($curl, CURLOPT_HEADER, 0);
+      curl_setopt($curl, CURLOPT_TIMEOUT, 10); // in seconds
+  	  curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+  	  curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+      curl_exec($curl);
+      curl_close($curl);
     }
   }
   
@@ -171,17 +181,4 @@ class Hoptoad
 EOF;
   }
   
-  function send_notification() {
-  	$curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices');
-    curl_setopt($curl, CURLOPT_POST, 1);	
-    curl_setopt($curl, CURLOPT_HEADER, 0);
-    curl_setopt($curl, CURLOPT_TIMEOUT, 10); // in seconds
-	  curl_setopt($curl, CURLOPT_POSTFIELDS, $this->notification_body());
-	  curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    curl_exec($curl);
-    curl_close($curl);
-  }
-    
 }
