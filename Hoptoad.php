@@ -38,35 +38,41 @@ An example of the type of request that we'll want to generate and send to hoptoa
 
 class Hoptoad
 {
+  
+  protected $error_class;
+  protected $message;
+  protected $file;
+  protected $line;
+  protected $backtrace;
+  
+  // This should be assigned to your hoptoad api key.
+  public static $api_key = 'YOUR_HOPTOAD_API_KEY';
+  
+  // Whether we're running in debug mode.
+  public static $debug = false;
+  
   /**
-   * Install the error and exception handlers that connect to Hoptoad
-   *
-   * @return void
-   * @author Rich Cavanaugh
+   * Install the error and exception handlers that connect to Hoptoad.
    */
-  public static function installHandlers($api_key=NULL)
+  static function install_handlers()
   {
-    if (isset($api_key)) define('HOPTOAD_API_KEY', $api_key);
-    
-    set_error_handler(array("Hoptoad", "errorHandler"));
-    set_exception_handler(array("Hoptoad", "exceptionHandler"));
+    set_error_handler(array("Hoptoad", "error_handler"));
+    set_exception_handler(array("Hoptoad", "exception_handler"));
   }
   
   /**
-   * Handle a php error
+   * Callback for PHP error handler.
    *
    * @param string $code 
    * @param string $message 
    * @param string $file 
    * @param string $line 
    * @return void
-   * @author Rich Cavanaugh
    */
-  public static function errorHandler($code, $message, $file, $line)
+  static function error_handler($code, $message, $file, $line)
   {
-    if ($code == E_STRICT) return;
-	  $trace = Hoptoad::tracer();
-    Hoptoad::notifyHoptoad(HOPTOAD_API_KEY, $message, $file, $line, $trace, null);
+    $hoptoad = new Hoptoad($code, $message, $file, $line, debug_backtrace());
+    $hoptoad->notify();
   }
   
   /**
@@ -76,53 +82,18 @@ class Hoptoad
    * @return void
    * @author Rich Cavanaugh
    */
-  public static function exceptionHandler($exception)
+  static function exception_handler($exception)
   {
-    $trace = Hoptoad::tracer($exception->getTrace());
-    Hoptoad::notifyHoptoad(HOPTOAD_API_KEY, $exception->getMessage(), $exception->getFile(), $exception->getLine(), $trace, null);
+    $hoptoad = new Hoptoad('Exception', $exception->getMessage(), $exception->getFile(), $exception->getLine(), $exception->getTrace());
+    $hoptoad->notify();
   }
   
-  /**
-   * Pass the error and environment data on to Hoptoad
-   *
-   * @package default
-   * @author Rich Cavanaugh
-   */
-  public static function notifyHoptoad($api_key, $message, $file, $line, $trace, $error_class=null)
-  {
-    array_unshift($trace, "$file:$line");
-    
-    if (isset($_SESSION)) {
-      $session = array('key' => session_id(), 'data' => $_SESSION);
-    } else {
-      $session = array();
-    }
-    
-    $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-    $body = '';
-    $body .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    $body .= "<notice version=\"2.0\">\n";
-    $body .= "  <api-key>{$api_key}</api-key>\n";
-    $body .= "  <notifier>\n";
-    $body .= "    <name>php-hoptoad-notifier</name>\n";
-    $body .= "    <version>0.2.0</version>\n";
-    $body .= "    <url>http://github.com/westarete/php-hoptoad-notifier</url>\n";
-    $body .= "  </notifier>\n";
-    $body .= "</notice>\n";
-    
-  	$curlHandle = curl_init(); // init curl
-
-    // cURL options
-    curl_setopt($curlHandle, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices'); // set the url to fetch
-    curl_setopt($curlHandle, CURLOPT_POST, 1);	
-    curl_setopt($curlHandle, CURLOPT_HEADER, 0);
-    curl_setopt($curlHandle, CURLOPT_TIMEOUT, 10); // time to wait in seconds
-	  curl_setopt($curlHandle, CURLOPT_POSTFIELDS,  $yaml);
-	  curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
-    curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, 1);
-
-    curl_exec($curlHandle);   // Make the call for sending the SMS
-    curl_close($curlHandle);  // Close the connection 
+  function __construct($error_class, $message, $file, $line, $backtrace) {
+    $this->error_class = $error_class;
+    $this->message     = $message;
+    $this->file        = $file;
+    $this->line        = $line;
+    $this->backtrace   = $backtrace;
   }
   
   /**
@@ -132,11 +103,11 @@ class Hoptoad
    * @return void
    * @author Rich Cavanaugh
    */
-  public static function tracer($trace = NULL)
+  function format_trace()
   {
-    $lines = Array(); 
-
-    $trace = $trace ? $trace : debug_backtrace();
+    $trace = $this->backtrace;
+    
+    $lines = array(); 
     
     $indent = '';
     $func = '';
@@ -158,5 +129,59 @@ class Hoptoad
     }
     
     return $lines;
-  }  
+  }
+
+  /**
+   * Pass the error and environment data on to Hoptoad
+   *
+   * @package default
+   * @author Rich Cavanaugh
+   */
+  function notify()
+  {
+    if (self::$debug) {
+      return $this->notification_body();
+    } else {
+      $this->send_notification();
+    }
+  }
+  
+  function notification_body() {
+    $trace = $this->format_trace($this->trace);
+    array_unshift($trace, $this->file . ':' . $this->line);
+
+    if (isset($_SESSION)) {
+      $session = array('key' => session_id(), 'data' => $_SESSION);
+    } else {
+      $session = array();
+    }
+
+    $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+
+    $body = <<<EOF
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<notice version=\"2.0\">
+  <api-key>{self::$api_key}</api-key>
+  <notifier>
+    <name>php-hoptoad-notifier</name>
+    <version>0.2.0</version>
+    <url>http://github.com/westarete/php-hoptoad-notifier</url>
+  </notifier>
+</notice>
+EOF;
+  }
+  
+  function send_notification() {
+  	$curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, 'http://hoptoadapp.com/notifier_api/v2/notices');
+    curl_setopt($curl, CURLOPT_POST, 1);	
+    curl_setopt($curl, CURLOPT_HEADER, 0);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 10); // in seconds
+	  curl_setopt($curl, CURLOPT_POSTFIELDS, $this->notification_body());
+	  curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: text/xml, application/xml", "Content-type: text/xml"));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_exec($curl);
+    curl_close($curl);
+  }
+    
 }
