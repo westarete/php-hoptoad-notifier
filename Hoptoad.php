@@ -127,6 +127,32 @@ class Hoptoad
     return $_SERVER;
   }
   
+  function component() {
+    return $_SERVER['REQUEST_URI'];
+  }
+  
+  function action() {
+    return '';
+  }
+  
+  function project_root() {
+    if (isset($_SERVER['DOCUMENT_ROOT'])) {
+      return $_SERVER['DOCUMENT_ROOT'];
+    } else {
+      return dirname(__FILE__);
+    }
+  }
+  
+  function environment() {
+    if ($_SERVER['HTTP_HOST'] == 'localhost' || 
+        $_SERVER['HTTP_HOST'] == '127.0.0.1' ||
+        $_SERVER['HTTP_HOST'] == '0.0.0.0') {
+      return 'development';
+    } else {
+      return 'production';
+    }
+  }
+  
   function xml_params() {
     return $this->xml_keys_and_values('params', $this->params());
   }
@@ -134,7 +160,7 @@ class Hoptoad
   function xml_session() {
     return $this->xml_keys_and_values('session', $this->session());
   }
-  
+
   function xml_cgi_data() {
     return $this->xml_keys_and_values('cgi-data', $this->cgi_data());
   }
@@ -157,6 +183,10 @@ class Hoptoad
     $api_key = self::$api_key;
     $error_class = $this->error_class;
     $message = $this->message;
+    $component = $this->component();
+    $action = $this->action();
+    $project_root = $this->project_root();
+    $environment = $this->environment();
     $xml_trace = $this->xml_backtrace();
     $xml_params = $this->xml_params();
     $xml_session = $this->xml_session();
@@ -178,15 +208,15 @@ class Hoptoad
   </error>
   <request>
     <url>{$url}</url>
-    <component></component>
-    <action></action>
+    <component>{$component}</component>
+    <action>{$action}</action>
     {$xml_params}
     {$xml_session}
     {$xml_cgi_data}
   </request>
   <server-environment>
-    <project-root>/testapp</project-root>
-    <environment-name>production</environment-name>
+    <project-root>{$project_root}</project-root>
+    <environment-name>${environment}</environment-name>
   </server-environment>
 </notice>
 EOF;
