@@ -35,15 +35,18 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
   
     public function testTracer()
     {
-      $trace = $this->hoptoad->format_trace();
-      $this->assertEquals(2, sizeof($trace));
-      $this->assertEquals("foo.php:242 in function foo in class Foo", $trace[0]);
-      $this->assertEquals("bar.php:42 in function bar in class Bar", $trace[1]);
+      $expected_xml = <<<XML
+        <backtrace>
+          <line method="foo" file="foo.php" number="242"/>
+          <line method="bar" file="bar.php" number="42"/>
+        </backtrace>
+XML;
+      $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_backtrace());
     }
     
     public function testNotificationBody() 
     {
-      $xmllint = popen('xmllint --schema hoptoad_2_0.xsd - > /dev/null', 'w');
+      $xmllint = popen('xmllint --schema hoptoad_2_0.xsd -', 'w');
       if ($xmllint) {
         fwrite($xmllint, $this->hoptoad->notification_body());
         $status = pclose($xmllint);

@@ -67,32 +67,25 @@ class Hoptoad
    * @return void
    * @author Rich Cavanaugh
    */
-  function format_trace()
+  function xml_backtrace()
   {
     $trace = $this->trace;
-    
-    $lines = array(); 
-    
-    $indent = '';
-    $func = '';
-    
+    $xml = "<backtrace>\n";
     foreach($trace as $val) {
+      // Skip the portion of the backtrace that originated from within 
+      // this class.
       if (isset($val['class']) && $val['class'] == 'Hoptoad') continue;
       
-      $file = isset($val['file']) ? $val['file'] : 'Unknown file';
-      $line_number = isset($val['line']) ? $val['line'] : '';
-      $func = isset($val['function']) ? $val['function'] : '';
-      $class = isset($val['class']) ? $val['class'] : '';
+      $file   = isset($val['file']) ? $val['file'] : 'Unknown file';
+      $number = isset($val['line']) ? $val['line'] : '';
+      $method = isset($val['function']) ? $val['function'] : '';
+      $class  = isset($val['class']) ? $val['class'] : '';
       
-      $line = $file;
-      if ($line_number) $line .= ':' . $line_number;
-      if ($func) $line .= ' in function ' . $func;
-      if ($class) $line .= ' in class ' . $class;
-      
-      $lines[] = $line;
+      $xml .= "      <line method=\"$method\" file=\"$file\" number=\"$number\"/>\n";
     }
+    $xml .= "    </backtrace>\n";
     
-    return $lines;
+    return $xml;
   }
 
   /**
@@ -121,8 +114,6 @@ class Hoptoad
   }
   
   function notification_body() {
-    $trace = $this->format_trace($this->trace);
-    array_unshift($trace, $this->file . ':' . $this->line);
 
     if (isset($_SESSION)) {
       $session = array('key' => session_id(), 'data' => $_SESSION);
@@ -133,6 +124,9 @@ class Hoptoad
     $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 
     $api_key = self::$api_key;
+    $error_class = $this->error_class;
+    $message = $this->message;
+    $trace = $this->xml_backtrace($this->trace);
 
     return <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -144,17 +138,20 @@ class Hoptoad
     <url>http://github.com/westarete/php-hoptoad-notifier</url>
   </notifier>
   <error>
-    <class>RuntimeError</class>
-    <message>RuntimeError: I've made a huge mistake</message>
-    <backtrace>
-      <line method="public" file="/testapp/app/models/user.rb" number="53"/>
-      <line method="index" file="/testapp/app/controllers/users_controller.rb" number="14"/>
-    </backtrace>
+    <class>{$error_class}</class>
+    <message>{$message}</message>
+    {$trace}
   </error>
   <request>
     <url>http://example.com</url>
-    <component/>
-    <action/>
+    <component></component>
+    <action></action>
+    <params>
+      <var key="name">value</var>
+    </params>
+    <session>
+      <var key="name">value</var>
+    </session>
     <cgi-data>
       <var key="SERVER_NAME">example.org</var>
       <var key="HTTP_USER_AGENT">Mozilla</var>
