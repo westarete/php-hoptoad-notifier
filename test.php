@@ -5,7 +5,7 @@ require_once 'Hoptoad.php';
 $_SERVER = array(
   'HTTP_HOST'    => 'localhost',
   'REQUEST_URI'  => '/example.php',
-  'HTTP_REFERER' => 'http://localhost/reports/somthing',
+  'HTTP_REFERER' => 'http://localhost/reports/something',
 );
 
 $_SESSION = array(
@@ -69,7 +69,7 @@ XML;
         <cgi-data>
           <var key="HTTP_HOST">localhost</var>
           <var key="REQUEST_URI">/example.php</var>
-          <var key="HTTP_REFERER">http://localhost/reports/somthing</var>
+          <var key="HTTP_REFERER">http://localhost/reports/something</var>
         </cgi-data>
 XML;
       $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_cgi_data());
