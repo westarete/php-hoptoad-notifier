@@ -40,6 +40,18 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
       );
       $this->hoptoad = new Hoptoad('ERROR', 'Something went wrong', 'foo', 23, $trace);
     }
+    
+    public function testRequestURI()
+    {
+      // check protocol support
+      $this->assertEquals('http://localhost/example.php', $this->hoptoad->request_uri());
+      $_SERVER['SERVER_PORT'] = 443;
+      $this->assertEquals('https://localhost/example.php', $this->hoptoad->request_uri());
+      
+      // Check query string support.
+      $_SERVER['QUERY_STRING'] = 'commit=true';
+      $this->assertEquals('https://localhost/example.php?commit=true', $this->hoptoad->request_uri());
+    }
   
     public function testXMLBacktrace()
     {

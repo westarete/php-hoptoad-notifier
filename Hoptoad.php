@@ -137,8 +137,21 @@ class Hoptoad
     return $xml;
   }
   
+  function request_uri() {
+    if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) {
+      $protocol = 'https';
+    } else {
+      $protocol = 'http';
+    }
+    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    $path = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+    $query_string = isset($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';
+    return "{$protocol}://{$host}{$path}{$query_string}";
+  }
+  
   function notification_body() {
-    $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+  
+    $url = $this->request_uri();
     $api_key = self::$api_key;
     $error_class = $this->error_class;
     $message = $this->message;
