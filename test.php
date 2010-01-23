@@ -6,7 +6,7 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-      $backtrace = array(
+      $trace = array(
         array(
           'class' => 'Hoptoad',
           'file'  => 'file.php',
@@ -26,7 +26,7 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
           'function' => 'bar',
         ),
       );
-      $this->hoptoad = new Hoptoad('ERROR', 'Something went wrong', 'foo', 23, $backtrace);
+      $this->hoptoad = new Hoptoad('ERROR', 'Something went wrong', 'foo', 23, $trace);
     }
   
     public function testTracer()

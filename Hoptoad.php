@@ -14,10 +14,10 @@ An example of the type of request that we'll want to generate and send to hoptoa
   <error>
     <class>RuntimeError</class>
     <message>RuntimeError: I've made a huge mistake</message>
-    <backtrace>
+    <trace>
       <line method="public" file="/testapp/app/models/user.rb" number="53"/>
       <line method="index" file="/testapp/app/controllers/users_controller.rb" number="14"/>
-    </backtrace>
+    </trace>
   </error>
   <request>
     <url>http://example.com</url>
@@ -43,7 +43,7 @@ class Hoptoad
   protected $message;
   protected $file;
   protected $line;
-  protected $backtrace;
+  protected $trace;
   
   // This should be assigned to your hoptoad api key.
   public static $api_key = 'YOUR_HOPTOAD_API_KEY';
@@ -88,12 +88,12 @@ class Hoptoad
     $hoptoad->notify();
   }
   
-  function __construct($error_class, $message, $file, $line, $backtrace) {
+  function __construct($error_class, $message, $file, $line, $trace) {
     $this->error_class = $error_class;
     $this->message     = $message;
     $this->file        = $file;
     $this->line        = $line;
-    $this->backtrace   = $backtrace;
+    $this->trace       = $trace;
   }
   
   /**
@@ -105,7 +105,7 @@ class Hoptoad
    */
   function format_trace()
   {
-    $trace = $this->backtrace;
+    $trace = $this->trace;
     
     $lines = array(); 
     
