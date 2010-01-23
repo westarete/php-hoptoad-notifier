@@ -2,6 +2,9 @@
 require_once 'PHPUnit/Framework.php';
 require_once 'Hoptoad.php';
  
+$_SERVER['HTTP_HOST'] = 'localhost';
+$_SERVER['REQUEST_URI'] = '/example.php';
+ 
 class HoptoadTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
@@ -37,5 +40,18 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
       $this->assertEquals("foo.php:242 in function foo in class Foo", $trace[0]);
       $this->assertEquals("bar.php:42 in function bar in class Bar", $trace[1]);
     }
+    
+    public function testNotificationBody() 
+    {
+      $xmllint = popen('xmllint --schema hoptoad_2_0.xsd - > /dev/null', 'w');
+      if ($xmllint) {
+        fwrite($xmllint, $this->hoptoad->notification_body());
+        $status = pclose($xmllint);
+        $this->assertEquals(0, $status, "XML output did not validate against schema.");
+      } else {
+        $this->fail("Couldn't run xmllint command.");
+      }
+    }
+    
 }
 ?>
