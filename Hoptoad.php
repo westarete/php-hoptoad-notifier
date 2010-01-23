@@ -115,20 +115,24 @@ class Hoptoad
     }
   }
   
-  function notification_body() {
-
-    if (isset($_SESSION)) {
-      $session = array('key' => session_id(), 'data' => $_SESSION);
+  function xml_session() {
+    if (isset($_SESSION)) {      
+      $xml  =     "<session>\n";
+      $xml .= $this->xml_keys_and_values($_SESSION);
+      $xml .= "    </session>";
     } else {
-      $session = array();
+      $xml = '';
     }
-
+    return $xml;
+  }
+  
+  function notification_body() {
     $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-
     $api_key = self::$api_key;
     $error_class = $this->error_class;
     $message = $this->message;
-    $trace = $this->xml_backtrace($this->trace);
+    $trace = $this->xml_backtrace();
+    $session = $this->xml_session();
 
     return <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -151,9 +155,7 @@ class Hoptoad
     <params>
       <var key="name">value</var>
     </params>
-    <session>
-      <var key="name">value</var>
-    </session>
+    {$session}
     <cgi-data>
       <var key="SERVER_NAME">example.org</var>
       <var key="HTTP_USER_AGENT">Mozilla</var>
@@ -165,6 +167,17 @@ class Hoptoad
   </server-environment>
 </notice>
 EOF;
+  }
+  
+  function xml_keys_and_values($ary)
+  {
+    $xml = '';
+    if ($ary) {
+      foreach ($ary as $key => $value) {
+        $xml .= "      <var key=\"{$key}\">{$value}</var>\n";
+      }
+    }
+    return $xml;
   }
   
 }

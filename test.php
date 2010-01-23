@@ -4,7 +4,11 @@ require_once 'Hoptoad.php';
  
 $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['REQUEST_URI'] = '/example.php';
- 
+$_SESSION = array(
+  'var1' => 'val1',
+  'var2' => 'val2',
+);
+
 class HoptoadTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
@@ -33,7 +37,7 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
       $this->hoptoad = new Hoptoad('ERROR', 'Something went wrong', 'foo', 23, $trace);
     }
   
-    public function testTracer()
+    public function testXMLBacktrace()
     {
       $expected_xml = <<<XML
         <backtrace>
@@ -42,6 +46,17 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
         </backtrace>
 XML;
       $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_backtrace());
+    }
+    
+    function testXMLSession()
+    {
+      $expected_xml = <<<XML
+        <session>
+          <var key="var1">val1</var>
+          <var key="var2">val2</var>
+        </session>
+XML;
+      $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_session());
     }
     
     public function testNotificationBody() 
