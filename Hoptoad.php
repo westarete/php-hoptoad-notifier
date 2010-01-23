@@ -168,10 +168,12 @@ class Hoptoad
 
     $url = "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 
-    $body = <<<EOF
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<notice version=\"2.0\">
-  <api-key>{self::$api_key}</api-key>
+    $api_key = self::$api_key;
+
+    return <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<notice version="2.0">
+  <api-key>{$api_key}</api-key>
   <notifier>
     <name>php-hoptoad-notifier</name>
     <version>0.2.0</version>
