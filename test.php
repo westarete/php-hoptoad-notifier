@@ -13,6 +13,16 @@ $_SESSION = array(
   'var2' => 'val2',
 );
 
+$_GET = array(
+  'get1' => 'val1',
+  'get2' => 'val2',
+);
+
+$_POST = array(
+  'post1' => 'val3',
+  'post2' => 'val4',
+);
+
 class HoptoadTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
@@ -66,6 +76,19 @@ XML;
       $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_backtrace());
     }
     
+    public function testXMLParams()
+    {      
+      $expected_xml = <<<XML
+        <params>
+          <var key="get1">val1</var>
+          <var key="get2">val2</var>
+          <var key="post1">val3</var>
+          <var key="post2">val4</var>
+        </params>
+XML;
+      $this->assertXmlStringEqualsXmlString($expected_xml, $this->hoptoad->xml_params());
+    }
+
     function testXMLSession()
     {
       $expected_xml = <<<XML

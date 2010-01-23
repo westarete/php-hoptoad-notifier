@@ -115,6 +115,18 @@ class Hoptoad
     }
   }
   
+  function xml_params() {
+    if ($_GET || $_POST) {      
+      $xml  =     "<params>\n";
+      $xml .= $this->xml_keys_and_values($_GET);
+      $xml .= $this->xml_keys_and_values($_POST);
+      $xml .= "    </params>";
+    } else {
+      $xml = '';
+    }
+    return $xml;
+  }
+
   function xml_session() {
     if (isset($_SESSION)) {      
       $xml  =     "<session>\n";
@@ -156,6 +168,7 @@ class Hoptoad
     $error_class = $this->error_class;
     $message = $this->message;
     $xml_trace = $this->xml_backtrace();
+    $xml_params = $this->xml_params();
     $xml_session = $this->xml_session();
     $xml_cgi_data = $this->xml_cgi_data();
 
@@ -177,9 +190,7 @@ class Hoptoad
     <url>{$url}</url>
     <component></component>
     <action></action>
-    <params>
-      <var key="name">value</var>
-    </params>
+    {$xml_params}
     {$xml_session}
     {$xml_cgi_data}
   </request>
