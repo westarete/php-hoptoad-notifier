@@ -74,16 +74,18 @@ class Hoptoad
     foreach($trace as $val) {
       // Skip the portion of the backtrace that originated from within 
       // this class.
-      if (isset($val['class']) && $val['class'] == 'Hoptoad') continue;
+      if (isset($val['class']) && $val['class'] == 'Hoptoad') {
+        continue;
+      }
       
-      $file   = isset($val['file']) ? $val['file'] : 'Unknown file';
-      $number = isset($val['line']) ? $val['line'] : '';
+      $file   = isset($val['file'])     ? $val['file']     : '';
+      $number = isset($val['line'])     ? $val['line']     : '';
       $method = isset($val['function']) ? $val['function'] : '';
-      $class  = isset($val['class']) ? $val['class'] : '';
+      $class  = isset($val['class'])    ? $val['class']    : '';
       
       $xml .= "      <line method=\"$method\" file=\"$file\" number=\"$number\"/>\n";
     }
-    $xml .= "    </backtrace>\n";
+    $xml .= "    </backtrace>";
     
     return $xml;
   }
