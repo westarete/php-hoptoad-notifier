@@ -237,3 +237,84 @@ EOF;
   }
   
 }
+
+class HoptoadForCodeIgniter extends Hoptoad {
+  
+  protected $ci;
+
+  /**
+   * Install the error and exception handlers that connect to Hoptoad.
+   */
+  static function install_handlers()
+  {
+    set_error_handler(array("HoptoadForCodeIgniter", "error_handler"));
+    set_exception_handler(array("HoptoadForCodeIgniter", "exception_handler"));
+  }
+  
+  /**
+   * Callback for PHP error handler.
+   *
+   * @param string $code 
+   * @param string $message 
+   * @param string $file 
+   * @param string $line 
+   * @return void
+   */
+  static function error_handler($code, $message, $file, $line)
+  {
+    $hoptoad = new HoptoadForCodeIgniter($code, $message, $file, $line, debug_backtrace());
+    $hoptoad->notify();
+  }
+  
+  /**
+   * Handle a raised exception
+   *
+   * @param string $exception 
+   * @return void
+   */
+  static function exception_handler($exception)
+  {
+    $hoptoad = new HoptoadForCodeIgniter('Exception', $exception->getMessage(), $exception->getFile(), $exception->getLine(), $exception->getTrace());
+    $hoptoad->notify();
+  }
+  
+  function __construct($error_class, $message, $file, $line, $trace) {
+    parent::__construct($error_class, $message, $file, $line, $trace);
+    $this->ci =& get_instance();
+  }
+
+  function params() {
+    return array_merge((array)$_GET, (array)$_POST);
+  }
+  
+  function session() {
+    return $_SESSION;
+  }
+  
+  function cgi_data() {
+    return $_SERVER;
+  }
+  
+  function component() {
+    return $this->ci->router->class;    
+  }
+  
+  function action() {
+    return $this->ci->router->method;
+  }
+  
+  function project_root() {
+    return APPPATH;
+  }
+  
+  function environment() {
+    if ($_SERVER['HTTP_HOST'] == 'localhost' || 
+        $_SERVER['HTTP_HOST'] == '127.0.0.1' ||
+        $_SERVER['HTTP_HOST'] == '0.0.0.0') {
+      return 'development';
+    } else {
+      return 'production';
+    }
+  }
+  
+}
