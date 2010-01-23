@@ -47,10 +47,12 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
       $this->assertEquals('http://localhost/example.php', $this->hoptoad->request_uri());
       $_SERVER['SERVER_PORT'] = 443;
       $this->assertEquals('https://localhost/example.php', $this->hoptoad->request_uri());
+      $_SERVER['SERVER_PORT'] = 80;
       
       // Check query string support.
       $_SERVER['QUERY_STRING'] = 'commit=true';
-      $this->assertEquals('https://localhost/example.php?commit=true', $this->hoptoad->request_uri());
+      $this->assertEquals('http://localhost/example.php?commit=true', $this->hoptoad->request_uri());
+      $_SERVER['QUERY_STRING'] = '';
     }
   
     public function testXMLBacktrace()
