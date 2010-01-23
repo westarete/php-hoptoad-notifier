@@ -174,7 +174,7 @@ class Hoptoad
     {$xml_trace}
   </error>
   <request>
-    <url>http://example.com</url>
+    <url>{$url}</url>
     <component></component>
     <action></action>
     <params>
