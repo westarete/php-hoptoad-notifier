@@ -115,38 +115,28 @@ class Hoptoad
     }
   }
   
+  function params() {
+    return array_merge((array)$_GET, (array)$_POST);
+  }
+  
+  function session() {
+    return $_SESSION;
+  }
+  
+  function cgi_data() {
+    return $_SERVER;
+  }
+  
   function xml_params() {
-    if ($_GET || $_POST) {      
-      $xml  =     "<params>\n";
-      $xml .= $this->xml_keys_and_values($_GET);
-      $xml .= $this->xml_keys_and_values($_POST);
-      $xml .= "    </params>";
-    } else {
-      $xml = '';
-    }
-    return $xml;
+    return $this->xml_keys_and_values('params', $this->params());
   }
 
   function xml_session() {
-    if (isset($_SESSION)) {      
-      $xml  =     "<session>\n";
-      $xml .= $this->xml_keys_and_values($_SESSION);
-      $xml .= "    </session>";
-    } else {
-      $xml = '';
-    }
-    return $xml;
+    return $this->xml_keys_and_values('session', $this->session());
   }
   
   function xml_cgi_data() {
-    if (isset($_SERVER)) {      
-      $xml  =     "<cgi-data>\n";
-      $xml .= $this->xml_keys_and_values($_SERVER);
-      $xml .= "    </cgi-data>";
-    } else {
-      $xml = '';
-    }
-    return $xml;
+    return $this->xml_keys_and_values('cgi-data', $this->cgi_data());
   }
   
   function request_uri() {
@@ -202,13 +192,16 @@ class Hoptoad
 EOF;
   }
   
-  function xml_keys_and_values($ary)
+  function xml_keys_and_values($parent, $ary)
   {
-    $xml = '';
     if ($ary) {
+      $xml = "<{$parent}>\n";
       foreach ($ary as $key => $value) {
         $xml .= "      <var key=\"{$key}\">{$value}</var>\n";
       }
+      $xml .= "    </{$parent}>";
+    } else {
+      $xml = '';
     }
     return $xml;
   }
