@@ -6,6 +6,7 @@ class HoptoadTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
+      Hoptoad::$test_mode = true;
       $trace = array(
         array(
           'class' => 'Hoptoad',

@@ -48,8 +48,8 @@ class Hoptoad
   // This should be assigned to your hoptoad api key.
   public static $api_key = 'YOUR_HOPTOAD_API_KEY';
   
-  // Whether we're running in debug mode.
-  public static $debug = false;
+  // Whether we're running in test mode.
+  public static $test_mode = false;
   
   /**
    * Install the error and exception handlers that connect to Hoptoad.
@@ -140,7 +140,7 @@ class Hoptoad
   function notify()
   {
     $body = $this->notification_body();
-    if (self::$debug) {
+    if (self::$test_mode) {
       return $body;
     } else {
     	$curl = curl_init();
